@@ -1,7 +1,5 @@
 {
   "meta": {
-    "builtAt": "2026-05-15T12:58:47.065374+00:00",
-    "manualPath": "/Users/ashabkhan/riscv-isa-manual",
     "sourceInstructions": 1188,
     "sourceRawExtensionTags": 114,
     "sourceCanonicalExtensions": 72,
@@ -10,14 +8,7 @@
     "jsonOnlyCount": 17,
     "compositeTagCount": 10,
     "pseudoTagCount": 3,
-    "manualOnlyCount": 82,
-    "manualMentionOnlyCount": 21,
-    "manualExtraction": [
-      "AsciiDoc ext anchors: [[ext:name]] and [#ext:name]",
-      "AsciiDoc semantic links are evidence only",
-      "Extension headings",
-      "Current preface module tables"
-    ]
+    "manualOnlyCount": 82
   },
   "matched": {
     "a": {

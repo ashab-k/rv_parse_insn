@@ -6,8 +6,7 @@
     "totalCompositeTags": 10,
     "totalPseudoTags": 3,
     "multiExtensionCount": 73,
-    "validationIssueCount": 0,
-    "builtAt": "2026-05-15T12:58:46.963412+00:00"
+    "validationIssueCount": 0
   },
   "extensions": {
     "rv32_c": {

@@ -2,7 +2,6 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 OUTPUT_PATH = Path("output.json")
@@ -156,8 +155,6 @@ def main():
 
     result = {
         "meta": {
-            "builtAt": datetime.now(timezone.utc).isoformat(),
-            "manualPath": str(MANUAL_PATH),
             "sourceInstructions": output["meta"]["totalInstructions"],
             "sourceRawExtensionTags": output["meta"]["totalRawExtensionTags"],
             "sourceCanonicalExtensions": len(json_ext),
@@ -167,13 +164,6 @@ def main():
             "compositeTagCount": len(composite),
             "pseudoTagCount": len(pseudo),
             "manualOnlyCount": len(manual_only),
-            "manualMentionOnlyCount": len(mention_only),
-            "manualExtraction": [
-                "AsciiDoc ext anchors: [[ext:name]] and [#ext:name]",
-                "AsciiDoc semantic links are evidence only",
-                "Extension headings",
-                "Current preface module tables",
-            ],
         },
         "matched": {name: {**json_summary(name, normalized), "manualEvidence": manual[name]} for name in matched},
         "jsonOnly": {name: json_summary(name, normalized) for name in json_only},

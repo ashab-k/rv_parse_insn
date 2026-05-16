@@ -1,5 +1,4 @@
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 INSTR_PATH = Path("instr_dict.json")
@@ -97,7 +96,6 @@ def build_output():
             "totalPseudoTags": sum(1 for e in normalized.values() if e["kind"] == "pseudo"),
             "multiExtensionCount": len(multi_extension),
             "validationIssueCount": len(issues),
-            "builtAt": datetime.now(timezone.utc).isoformat(),
         },
         "extensions": extensions,
         "normalizedExtensions": normalized,
