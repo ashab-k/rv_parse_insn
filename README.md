@@ -1,85 +1,38 @@
-# rv_parse_insn
+# Comparing riscv-isa-manual with instructions listed in RISC-V Extensions Landscape
 
-Compare RISC-V extension tags on instructions (`instr_dict.json`) against extensions named in the [RISC-V ISA manual](https://github.com/riscv/riscv-isa-manual) AsciiDoc sources.
+This is my solution for the coding challenge listed for the LFX mentorshit application.
 
-**Report:** [riscv-extensions-landscape.pdf](riscv-extensions-landscape.pdf) (bar charts: extension overlap, landscape categories, instruction-name overlap, top extensions by insn count). Regenerate with `report.py` after the steps below.
+We take extension tags from `instr_dict.json` (the Extensions Landscape instruction list) and check them against extension names in a local clone of [riscv-isa-manual](https://github.com/riscv/riscv-isa-manual).
 
-## Inputs
+Charts are in [riscv-extensions-landscape.pdf](riscv-extensions-landscape.pdf).
 
-| File | What it is |
-|------|------------|
-| `instr_dict.json` | Instruction dictionary; each entry has an `extension` array (e.g. `rv_i`, `rv64_zba`). |
-| `~/riscv-isa-manual` (default) | Cloned ISA manual repo; comparison reads `src/**/*.adoc`. Override with `--manual /path/to/riscv-isa-manual`. |
+## How it works
 
-## Pipeline
-
-```text
-instr_dict.json
-      │
-      ▼  analyze.py
- output.json          ← group by extension tag, normalize names, classify tags
-      │
-      ▼  compare.py   (+ manual .adoc scan)
- compare_output.json  ← matched / json-only / manual-only extensions
-      │
-      ▼  report.py
- riscv-extensions-landscape.pdf
+```
+instr_dict.json → analyze.py → output.json → compare.py → compare_output.json → report.py → PDF
 ```
 
-### 1. Extract extensions from instructions — `analyze.py`
+**`analyze.py`** — For each instruction, read its `extension` list (e.g. `rv_i`, `rv64_zba`). Group instructions by tag, normalize names (`rv64_zba` → `zba`), and tag each as a real extension, a composite (`zba_zbb`), or a pseudo tag (`system`, `s`, `u`). Writes `output.json`.
 
-- Read every mnemonic in `instr_dict.json`.
-- For each instruction, read `extension` (must be a non-empty list of strings like `rv_*`, `rv32_*`, `rv64_*`).
-- Bucket instructions under each raw tag; also bucket under a **canonical** name: strip `rv32_` / `rv64_` / `rv_` prefix and lowercase (e.g. `rv64_zba` → `zba`).
-- **Classify** canonical names:
-  - `extension` — single-letter or `z*` / `s*` style name
-  - `composite` — contains `_` (e.g. `zba_zbb`)
-  - `pseudo` — `system`, `s`, `u`
-- Write `output.json` (`extensions`, `normalizedExtensions`, validation issues).
+**`compare.py`** — Scan the manual’s `src/**/*.adoc` for extension names: `ext:foo[]` / `[[ext:foo]]`, extension headings, and the preface table in `preface.adoc`. Compare those to canonical extensions from the landscape. Result buckets: matched, landscape-only, manual-only. Writes `compare_output.json`.
 
-### 2. Compare to the manual — `compare.py`
-
-**Manual side** — walk all `src/**/*.adoc` and collect extension names from:
-
-| Source | Pattern / rule |
-|--------|----------------|
-| Inline anchors | `[[ext:name]]`, `[#ext:name]`, `ext:name[]`, `extlink:name[]` |
-| Headings | lines like `=== ext:foo[] … Extension` |
-| Preface table | rows in `preface.adoc` between `\|===` (base ISA `i`/`e`, plus listed extensions) |
-
-Names are normalized (lowercase, strip trailing “ Extension(s)”). Junk names (`g`, `x`, `*`, etc.) are dropped. Each hit keeps file, line, and match text.
-
-**Landscape side** — canonical names from `output.json` where `kind == "extension"`.
-
-**Sets:**
-
-- **matched** — in both landscape and manual (manual has a defining hit, not link-only)
-- **jsonOnly** — in landscape only
-- **manualOnly** — in manual only
-
-Also lists `compositeTags`, `pseudoTags`, and manual mention-only extensions. Writes `compare_output.json`.
-
-### 3. Charts — `report.py`
-
-Loads `instr_dict.json`, `output.json`, `compare_output.json`; optionally counts unique `insn:…` references in the manual. Writes `riscv-extensions-landscape.pdf`.
+**`report.py`** — Builds the PDF from the JSON outputs (extension overlap, categories, instruction-name overlap, top extensions by count).
 
 ## Run
+
+Clone the manual somewhere (default path is `~/riscv-isa-manual`).
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 python analyze.py
-python compare.py                    # needs ~/riscv-isa-manual or --manual PATH
-python report.py                     # same --manual if not default path
+python compare.py              # or: python compare.py --manual /path/to/riscv-isa-manual
+python report.py
 ```
 
-Commit or open [riscv-extensions-landscape.pdf](riscv-extensions-landscape.pdf) in the repo root after `report.py`. GitHub does not embed PDFs inside the README; use the link above or download the file.
+## Files
 
-## Outputs
-
-| File | Contents |
-|------|----------|
-| `output.json` | Per-tag and per-canonical-extension instruction lists and counts |
-| `compare_output.json` | Extension set diff + manual evidence snippets |
-| `riscv-extensions-landscape.pdf` | Summary charts |
+- `instr_dict.json` — input (landscape instructions + extension tags)
+- `output.json`, `compare_output.json` — intermediate results
+- `riscv-extensions-landscape.pdf` — summary report
